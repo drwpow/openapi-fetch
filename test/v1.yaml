@@ -1,0 +1,135 @@
+openapi:
+  version: '3.1'
+paths:
+  /create-post:
+    post:
+      requestBody:
+        $ref: '#/components/requestBodies/CreatePost'
+      responses:
+        201:
+          $ref: '#/components/responses/CreatePost'
+        500:
+          $ref: '#/components/responses/Error'
+  /post/{post_id}:
+    parameters:
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+    get:
+      responses:
+        200:
+          $ref: '#/components/responses/PostGet'
+        404:
+          $ref: '#/components/responses/Error'
+        500:
+          $ref: '#/components/responses/Error'
+    delete:
+      responses:
+        200:
+          $ref: '#/components/responses/PostDelete'
+        500:
+          $ref: '#/components/responses/Error'
+
+  /self:
+    get:
+      responses:
+        200:
+          $ref: '#/components/responses/User'
+        404:
+          $ref: '#/components/responses/Error'
+        500:
+          $ref: '#/components/responses/Error'
+
+components:
+  schemas:
+    Post:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        publish_date:
+          type: number
+      required:
+        - title
+        - body
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+        age:
+          type: number
+        avatar:
+          type: string
+      required:
+        - email
+  requestBodies:
+    CreatePost:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              body:
+                type: string
+              publish_date:
+                type: number
+            required:
+              - title
+              - body
+              - publish_date
+  responses:
+    CreatePost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+            required:
+              - status
+
+    User:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+
+    PostDelete:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+            required:
+              - status
+
+    PostGet:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Post'
+
+    Error:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: number
+              message:
+                type: string
+            required:
+              - code
+              - message
