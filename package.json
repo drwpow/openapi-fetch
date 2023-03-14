@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/drwpow/openapi-fetch",
   "type": "module",
-  "main": "./dist/index.min.js",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "npm run build:clean && npm run build:ts",
     "build:clean": "del dist",
