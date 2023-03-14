@@ -38,7 +38,7 @@ export default function createClient<T>(defaultOptions?: ClientOptions) {
     // URL
     let finalURL = `${defaultOptions?.baseUrl ?? ''}${url as string}`;
     const { path, query } = (params as BaseParams | undefined) ?? {};
-    if (path) for (const [k, v] of Object.entries(path)) finalURL = finalURL.replace(`{${k}}`, `${v}`.trim());
+    if (path) for (const [k, v] of Object.entries(path)) finalURL = finalURL.replace(`{${k}}`, encodeURIComponent(`${v}`.trim()));
     if (query) finalURL = `${finalURL}?${new URLSearchParams(query as any).toString()}`;
     // headers
     const baseHeaders = new Headers(defaultHeaders); // clone defaults (don’t overwrite!)
@@ -81,8 +81,50 @@ export default function createClient<T>(defaultOptions?: ClientOptions) {
     ? { body: Unwrap<T[U][M]['requestBody']> }
     : { body?: never };
   type FetchOptions<U extends keyof T, M extends keyof T[U]> = Params<U, M> & Body<U, M> & Omit<RequestInit, 'body'>;
-  type Success<T> = T extends { 200: any } ? T[200] : T extends { 201: any } ? T[201] : T extends { default: any } ? T['default'] : unknown;
-  type Error<T> = T extends { 500: any } ? T[500] : T extends { 404: any } ? T[404] : T extends { default: any } ? T['default'] : unknown;
+  type Success<T> = T extends { 200: any } ? T[200] : T extends { 201: any } ? T[201] : T extends { 202: any } ? T[202] : T extends { default: any } ? T['default'] : unknown;
+  type Error<T> = T extends { 500: any }
+    ? T[500]
+    : T extends { 404: any }
+    ? T[404]
+    : T extends { 402: any }
+    ? T[402]
+    : T extends { 401: any }
+    ? T[401]
+    : T extends { 400: any }
+    ? T[400]
+    : T extends { 422: any }
+    ? T[422]
+    : T extends { 418: any }
+    ? T[418]
+    : T extends { 417: any }
+    ? T[417]
+    : T extends { 416: any }
+    ? T[416]
+    : T extends { 415: any }
+    ? T[415]
+    : T extends { 414: any }
+    ? T[414]
+    : T extends { 413: any }
+    ? T[413]
+    : T extends { 412: any }
+    ? T[412]
+    : T extends { 411: any }
+    ? T[411]
+    : T extends { 410: any }
+    ? T[410]
+    : T extends { 409: any }
+    ? T[409]
+    : T extends { 408: any }
+    ? T[408]
+    : T extends { 407: any }
+    ? T[407]
+    : T extends { 406: any }
+    ? T[406]
+    : T extends { 405: any }
+    ? T[405]
+    : T extends { default: any }
+    ? T['default']
+    : unknown;
   type FetchResponse<U extends keyof T, M extends keyof T[U]> =
     | {
         data: T[U][M] extends { responses: any } ? Unwrap<Success<T[U][M]['responses']>> : unknown;

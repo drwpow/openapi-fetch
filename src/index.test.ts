@@ -107,6 +107,17 @@ describe('get()', () => {
     // assert data is empty
     expect(data).toBe(undefined);
   });
+
+  it('escapes URLs properly', async () => {
+    const client = createClient<paths>();
+    fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
+    await client.get('/post/{post_id}', {
+      params: { path: { post_id: 'post?id = 🥴' } },
+    });
+
+    // expect post_id to be encoded properly
+    expect(fetchMocker.mock.calls[0][0]).toBe('/post/post%3Fid%20%3D%20%F0%9F%A5%B4');
+  });
 });
 
 describe('post()', () => {
