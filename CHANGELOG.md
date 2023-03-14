@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- b69cb51: Autocomplete URLs by path (#2)[https://github.com/drwpow/openapi-fetch/pull/2]. Thanks, [@mitchell-merry](https://github.com/mitchell-merry)!
+- b69cb51: Autocomplete URLs by path ([#2](https://github.com/drwpow/openapi-fetch/pull/2)). Thanks, [@mitchell-merry](https://github.com/mitchell-merry)!
 
 ## 0.0.2
 
