@@ -43,6 +43,64 @@ export interface paths {
       };
     };
   };
+  "/anyMethod": {
+    get: {
+      responses: {
+        200: components["responses"]["User"];
+        404: components["responses"]["Error"];
+        500: components["responses"]["Error"];
+      };
+    };
+    put: {
+      responses: {
+        200: components["responses"]["User"];
+        404: components["responses"]["Error"];
+        500: components["responses"]["Error"];
+      };
+    };
+    post: {
+      responses: {
+        200: components["responses"]["User"];
+        404: components["responses"]["Error"];
+        500: components["responses"]["Error"];
+      };
+    };
+    delete: {
+      responses: {
+        200: components["responses"]["User"];
+        404: components["responses"]["Error"];
+        500: components["responses"]["Error"];
+      };
+    };
+    options: {
+      responses: {
+        200: components["responses"]["User"];
+        404: components["responses"]["Error"];
+        500: components["responses"]["Error"];
+      };
+    };
+    head: {
+      responses: {
+        200: components["responses"]["User"];
+        404: components["responses"]["Error"];
+        500: components["responses"]["Error"];
+      };
+    };
+    patch: {
+      responses: {
+        200: components["responses"]["User"];
+        404: components["responses"]["Error"];
+        500: components["responses"]["Error"];
+      };
+    };
+    trace: {
+      responses: {
+        200: components["responses"]["User"];
+        404: components["responses"]["Error"];
+        500: components["responses"]["Error"];
+      };
+    };
+  };
 }
 
 export type webhooks = Record<string, never>;

@@ -13,6 +13,9 @@ interface BaseParams {
   query?: Record<string, unknown>;
 }
 
+export const methods = [ 'get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace' ] as const;
+export type Method = (typeof methods)[number];
+
 type TruncatedResponse = Omit<Response, 'arrayBuffer' | 'blob' | 'body' | 'clone' | 'formData' | 'json' | 'text'>;
 /** Infer request/response from content type */
 type Unwrap<T> = T extends {
@@ -67,6 +70,11 @@ export default function createClient<T>(defaultOptions?: ClientOptions) {
     };
     return res.ok ? { data: await res.json(), response } : { error: await res.json(), response };
   }
+
+  /** Gets a union of paths which have method */
+  type PathsWith<M extends Method> = {
+    [Path in keyof T]: T[Path] extends { [ K in M ]: unknown } ? Path : never
+  }[keyof T];
 
   type PathParams<U extends keyof T> = T[U] extends { parameters: any } ? { params: T[U]['parameters'] } : { params?: BaseParams };
   type MethodParams<U extends keyof T, M extends keyof T[U]> = T[U][M] extends {
@@ -139,35 +147,35 @@ export default function createClient<T>(defaultOptions?: ClientOptions) {
 
   return {
     /** Call a GET endpoint */
-    async get<U extends keyof T, M extends keyof T[U]>(url: T[U] extends { get: any } ? U : never, options: FetchOptions<U, M>) {
+    async get<U extends PathsWith<'get'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
       return coreFetch(url, { ...options, method: 'GET' });
     },
     /** Call a PUT endpoint */
-    async put<U extends keyof T, M extends keyof T[U]>(url: T[U] extends { put: any } ? U : never, options: FetchOptions<U, M>) {
+    async put<U extends PathsWith<'put'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
       return coreFetch(url, { ...options, method: 'PUT' });
     },
     /** Call a POST endpoint */
-    async post<U extends keyof T, M extends keyof T[U]>(url: T[U] extends { post: any } ? U : never, options: FetchOptions<U, M>) {
+    async post<U extends PathsWith<'post'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
       return coreFetch(url, { ...options, method: 'POST' });
     },
     /** Call a DELETE endpoint */
-    async del<U extends keyof T, M extends keyof T[U]>(url: T[U] extends { delete: any } ? U : never, options: FetchOptions<U, M>) {
+    async del<U extends PathsWith<'delete'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
       return coreFetch(url, { ...options, method: 'DELETE' });
     },
     /** Call a OPTIONS endpoint */
-    async options<U extends keyof T, M extends keyof T[U]>(url: T[U] extends { options: any } ? U : never, options: FetchOptions<U, M>) {
+    async options<U extends PathsWith<'options'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
       return coreFetch(url, { ...options, method: 'OPTIONS' });
     },
     /** Call a HEAD endpoint */
-    async head<U extends keyof T, M extends keyof T[U]>(url: T[U] extends { head: any } ? U : never, options: FetchOptions<U, M>) {
+    async head<U extends PathsWith<'head'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
       return coreFetch(url, { ...options, method: 'HEAD' });
     },
     /** Call a PATCH endpoint */
-    async patch<U extends keyof T, M extends keyof T[U]>(url: T[U] extends { patch: any } ? U : never, options: FetchOptions<U, M>) {
+    async patch<U extends PathsWith<'patch'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
       return coreFetch(url, { ...options, method: 'PATCH' });
     },
     /** Call a TRACE endpoint */
-    async trace<U extends keyof T, M extends keyof T[U]>(url: T[U] extends { trace: any } ? U : never, options: FetchOptions<U, M>) {
+    async trace<U extends PathsWith<'trace'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
       return coreFetch(url, { ...options, method: 'TRACE' });
     },
   };
