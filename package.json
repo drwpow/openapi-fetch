@@ -9,10 +9,15 @@
   "keywords": [
     "openapi",
     "swagger",
+    "rest",
+    "api",
     "oapi_3",
     "oapi_3_1",
     "typescript",
-    "fetch"
+    "fetch",
+    "react",
+    "vue",
+    "svelte"
   ],
   "license": "MIT",
   "bugs": {
