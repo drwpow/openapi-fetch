@@ -1,5 +1,11 @@
 # openapi-fetch
 
+## 0.0.4
+
+### Patch Changes
+
+- ce99563: Fix optional requestBody in path
+
 ## 0.0.3
 
 ### Patch Changes
