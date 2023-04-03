@@ -5,6 +5,7 @@
     "name": "Drew Powers",
     "email": "drew@pow.rs"
   },
+  "description": "Ultra-fast fetching for TypeScript generated automatically from your OpenAPI schema. Weighs in at 1 kb and has virtually zero runtime. Works with React, Vue, Svelte, or vanilla JS.",
   "keywords": [
     "openapi",
     "swagger",

@@ -1,6 +1,6 @@
 # 🎾 openapi-fetch
 
-Ultra-fast [fetching](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) for TypeScript generated automatically from your OpenAPI schema. Weighs in at **1 kb** and has virtually zero runtime. Works with React, Vue, Svelte, or vanilla JS.
+Ultra-fast fetching for TypeScript generated automatically from your OpenAPI schema. Weighs in at **1 kb** and has virtually zero runtime. Works with React, Vue, Svelte, or vanilla JS.
 
 | Library                        | Size (min) |
 | :----------------------------- | ---------: |
