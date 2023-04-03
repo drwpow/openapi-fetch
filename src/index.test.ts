@@ -26,6 +26,13 @@ describe('createClient', () => {
     expect(client).toHaveProperty('trace');
   });
 
+  it('respects baseUrl', async () => {
+    const client = createClient<paths>({ baseUrl: 'https://myapi.com/v1' });
+    fetchMocker.mockResponse(JSON.stringify({ message: 'OK' }));
+    await client.get('/self', {});
+    expect(fetchMocker.mock.calls[0][0]).toBe('https://myapi.com/v1/self');
+  });
+
   it('preserves default headers', async () => {
     const headers: HeadersInit = { Authorization: 'Bearer secrettoken' };
 

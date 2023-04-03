@@ -16,6 +16,11 @@ export interface paths {
   };
   "/post/{post_id}": {
     get: {
+      parameters: {
+        path: {
+          post_id: string;
+        };
+      };
       responses: {
         200: components["responses"]["PostGet"];
         404: components["responses"]["Error"];
@@ -23,6 +28,11 @@ export interface paths {
       };
     };
     delete: {
+      parameters: {
+        path: {
+          post_id: string;
+        };
+      };
       responses: {
         200: components["responses"]["PostDelete"];
         500: components["responses"]["Error"];
