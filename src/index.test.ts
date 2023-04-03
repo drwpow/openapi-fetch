@@ -1,7 +1,8 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+// @ts-expect-error
 import createFetchMock from 'vitest-fetch-mock';
 import createClient from './index.js';
-import { paths } from '../test/v1';
+import type { paths } from '../test/v1.js';
 
 const fetchMocker = createFetchMock(vi);
 
@@ -156,6 +157,30 @@ describe('post()', () => {
 
     // assert error is empty
     expect(error).toBe(undefined);
+  });
+
+  it('supports optional requestBody', async () => {
+    const mockData = { status: 'success' };
+    const client = createClient<paths>();
+    fetchMocker.mockResponse(() => ({ status: 201, body: JSON.stringify(mockData) }));
+
+    // assert omitting `body` doesn’t raise a TS error (testing the response isn’t necessary)
+    await client.post('/create-tag/{name}', {
+      params: { path: { name: 'New Tag' } },
+    });
+
+    // assert providing `body` with correct schema doesn’t raise a TS error
+    await client.post('/create-tag/{name}', {
+      params: { path: { name: 'New Tag' } },
+      body: { description: 'This is a new tag' },
+    });
+
+    // assert providing `body` with bad schema WILL raise a TS error
+    await client.post('/create-tag/{name}', {
+      params: { path: { name: 'New Tag' } },
+      // @ts-expect-error
+      body: { foo: 'Bar' },
+    });
   });
 });
 

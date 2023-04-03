@@ -10,6 +10,21 @@ paths:
           $ref: '#/components/responses/CreatePost'
         500:
           $ref: '#/components/responses/Error'
+  /create-tag/{name}:
+    parameters:
+      - in: path
+        name: name
+        schema:
+          type: string
+        required: true
+    post:
+      requestBody:
+        $ref: '#/components/requestBodies/CreateTag'
+      responses:
+        201:
+          $ref: '#/components/responses/CreateTag'
+        500:
+          $ref: '#/components/responses/Error'
   /post/{post_id}:
     parameters:
       - in: path
@@ -150,8 +165,26 @@ components:
               - title
               - body
               - publish_date
+    CreateTag:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              description:
+                type: string
   responses:
     CreatePost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+            required:
+              - status
+    CreateTag:
       content:
         application/json:
           schema:
