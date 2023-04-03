@@ -23,7 +23,10 @@
   "scripts": {
     "build": "npm run build:clean && npm run build:ts",
     "build:clean": "del dist",
-    "build:ts": "tsc",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "lint": "npm run lint:ts && npm run lint:js",
+    "lint:js": "npx prettier --check \"{src,test}/**/*\"",
+    "lint:ts": "tsc --noEmit",
     "test": "vitest run",
     "prepare": "openapi-typescript test/v1.yaml -o test/v1.d.ts",
     "prepublish": "npm run prepare && npm run build",

@@ -13,22 +13,19 @@ interface BaseParams {
   query?: Record<string, unknown>;
 }
 
-export const methods = [ 'get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace' ] as const;
+export const methods = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'] as const;
 export type Method = (typeof methods)[number];
 
 type TruncatedResponse = Omit<Response, 'arrayBuffer' | 'blob' | 'body' | 'clone' | 'formData' | 'json' | 'text'>;
 /** Infer request/response from content type */
-type Unwrap<T> = T extends {
-  content: { 'application/json': { schema: any } };
+type UnwrapNonNullable<T> = T extends {
+  content: { 'application/json': any };
 }
-  ? T['content']['application/json']['schema']
-  : T extends { content: { 'application/json': any } }
   ? T['content']['application/json']
-  : T extends { content: { '*/*': { schema: any } } }
-  ? T['content']['*/*']['schema']
   : T extends { content: { '*/*': any } }
   ? T['content']['*/*']
   : T;
+type Unwrap<T> = T extends NonNullable<T> | undefined ? UnwrapNonNullable<NonNullable<T>> | undefined : UnwrapNonNullable<T>;
 
 export default function createClient<T>(defaultOptions?: ClientOptions) {
   const defaultHeaders = new Headers({
@@ -73,22 +70,18 @@ export default function createClient<T>(defaultOptions?: ClientOptions) {
 
   /** Gets a union of paths which have method */
   type PathsWith<M extends Method> = {
-    [Path in keyof T]: T[Path] extends { [ K in M ]: unknown } ? Path : never
+    [Path in keyof T]: T[Path] extends { [K in M]: unknown } ? Path : never;
   }[keyof T];
 
-  type PathParams<U extends keyof T> = T[U] extends { parameters: any } ? { params: T[U]['parameters'] } : { params?: BaseParams };
-  type MethodParams<U extends keyof T, M extends keyof T[U]> = T[U][M] extends {
+  type PathParams<T> = T extends { parameters: any } ? { params: T['parameters'] } : { params?: BaseParams };
+  type MethodParams<T> = T extends {
     parameters: any;
   }
-    ? { params: T[U][M]['parameters'] }
+    ? { params: T['parameters'] }
     : { params?: BaseParams };
-  type Params<U extends keyof T, M extends keyof T[U]> = PathParams<U> & MethodParams<U, M>;
-  type Body<U extends keyof T, M extends keyof T[U]> = T[U][M] extends {
-    requestBody: any;
-  }
-    ? { body: Unwrap<T[U][M]['requestBody']> }
-    : { body?: never };
-  type FetchOptions<U extends keyof T, M extends keyof T[U]> = Params<U, M> & Body<U, M> & Omit<RequestInit, 'body'>;
+  type Params<T> = PathParams<T> & MethodParams<T>;
+  type Body<T> = T extends { requestBody: any } ? { body: Unwrap<T['requestBody']> } : { body?: never };
+  type FetchOptions<U extends keyof T, M extends keyof T[U]> = Params<T[U][M]> & Body<T[U][M]> & Omit<RequestInit, 'body'>;
   type Success<T> = T extends { 200: any } ? T[200] : T extends { 201: any } ? T[201] : T extends { 202: any } ? T[202] : T extends { default: any } ? T['default'] : unknown;
   type Error<T> = T extends { 500: any }
     ? T[500]

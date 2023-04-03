@@ -14,6 +14,25 @@ export interface paths {
       };
     };
   };
+  "/create-tag/{name}": {
+    post: {
+      parameters: {
+        path: {
+          name: string;
+        };
+      };
+      requestBody: components["requestBodies"]["CreateTag"];
+      responses: {
+        201: components["responses"]["CreateTag"];
+        500: components["responses"]["Error"];
+      };
+    };
+    parameters: {
+      path: {
+        name: string;
+      };
+    };
+  };
   "/post/{post_id}": {
     get: {
       parameters: {
@@ -136,6 +155,13 @@ export interface components {
         };
       };
     };
+    CreateTag: {
+      content: {
+        "application/json": {
+          status: string;
+        };
+      };
+    };
     User: {
       content: {
         "application/json": components["schemas"]["User"];
@@ -170,6 +196,13 @@ export interface components {
           title: string;
           body: string;
           publish_date: number;
+        };
+      };
+    };
+    CreateTag?: {
+      content: {
+        "application/json": {
+          description?: string;
         };
       };
     };
