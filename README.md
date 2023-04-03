@@ -10,6 +10,8 @@ Ultra-fast [fetching](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
 
 \* _Note: codegen depends on the scope of your API: the larger it is, the larger your client weight. This is the actual weight of GitHub’s REST API client._
 
+The syntax is inspired by popular libraries like react-query or Apollo client, but without all the bells and whistles and in a 1 kb package.
+
 ```ts
 import createClient from 'openapi-fetch';
 import { paths } from './v1'; // (generated from openapi-typescript)
