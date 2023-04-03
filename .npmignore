@@ -1,3 +1,7 @@
 /.changeset
+/.prettierignore
+/.prettierrc
 /.github
-/tsconfig.lint.json
+/tsconfig.build.json
+/test
+/vite.config.ts
