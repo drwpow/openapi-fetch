@@ -8,7 +8,7 @@ interface ClientOptions extends RequestInit {
   baseUrl?: string;
 }
 
-interface BaseParams {
+export interface BaseParams {
   path?: Record<string, unknown>;
   query?: Record<string, unknown>;
 }
