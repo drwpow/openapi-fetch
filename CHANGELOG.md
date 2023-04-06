@@ -1,5 +1,11 @@
 # openapi-fetch
 
+## 0.0.6
+
+### Patch Changes
+
+- 27c149c: Fix data, error sometimes returning undefined
+
 ## 0.0.5
 
 ### Patch Changes
