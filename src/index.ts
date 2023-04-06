@@ -140,36 +140,36 @@ export default function createClient<T>(defaultOptions?: ClientOptions) {
 
   return {
     /** Call a GET endpoint */
-    async get<U extends PathsWith<'get'>, M extends keyof T[U]>(url: U, options?: FetchOptions<U, M>) {
-      return coreFetch(url, { ...(options ?? ({} as FetchOptions<U, M>)), method: 'GET' });
+    async get<U extends PathsWith<'get'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
+      return coreFetch(url, { ...options, method: 'GET' });
     },
     /** Call a PUT endpoint */
-    async put<U extends PathsWith<'put'>, M extends keyof T[U]>(url: U, options?: FetchOptions<U, M>) {
-      return coreFetch(url, { ...(options ?? ({} as FetchOptions<U, M>)), method: 'PUT' });
+    async put<U extends PathsWith<'put'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
+      return coreFetch(url, { ...options, method: 'PUT' });
     },
     /** Call a POST endpoint */
-    async post<U extends PathsWith<'post'>, M extends keyof T[U]>(url: U, options?: FetchOptions<U, M>) {
-      return coreFetch(url, { ...(options ?? ({} as FetchOptions<U, M>)), method: 'POST' });
+    async post<U extends PathsWith<'post'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
+      return coreFetch(url, { ...options, method: 'POST' });
     },
     /** Call a DELETE endpoint */
-    async del<U extends PathsWith<'delete'>, M extends keyof T[U]>(url: U, options?: FetchOptions<U, M>) {
-      return coreFetch(url, { ...(options ?? ({} as FetchOptions<U, M>)), method: 'DELETE' });
+    async del<U extends PathsWith<'delete'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
+      return coreFetch(url, { ...options, method: 'DELETE' });
     },
     /** Call a OPTIONS endpoint */
-    async options<U extends PathsWith<'options'>, M extends keyof T[U]>(url: U, options?: FetchOptions<U, M>) {
-      return coreFetch(url, { ...(options ?? ({} as FetchOptions<U, M>)), method: 'OPTIONS' });
+    async options<U extends PathsWith<'options'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
+      return coreFetch(url, { ...options, method: 'OPTIONS' });
     },
     /** Call a HEAD endpoint */
-    async head<U extends PathsWith<'head'>, M extends keyof T[U]>(url: U, options?: FetchOptions<U, M>) {
-      return coreFetch(url, { ...(options ?? ({} as FetchOptions<U, M>)), method: 'HEAD' });
+    async head<U extends PathsWith<'head'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
+      return coreFetch(url, { ...options, method: 'HEAD' });
     },
     /** Call a PATCH endpoint */
-    async patch<U extends PathsWith<'patch'>, M extends keyof T[U]>(url: U, options?: FetchOptions<U, M>) {
-      return coreFetch(url, { ...(options ?? ({} as FetchOptions<U, M>)), method: 'PATCH' });
+    async patch<U extends PathsWith<'patch'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
+      return coreFetch(url, { ...options, method: 'PATCH' });
     },
     /** Call a TRACE endpoint */
-    async trace<U extends PathsWith<'trace'>, M extends keyof T[U]>(url: U, options?: FetchOptions<U, M>) {
-      return coreFetch(url, { ...(options ?? ({} as FetchOptions<U, M>)), method: 'TRACE' });
+    async trace<U extends PathsWith<'trace'>, M extends keyof T[U]>(url: U, options: FetchOptions<U, M>) {
+      return coreFetch(url, { ...options, method: 'TRACE' });
     },
   };
 }
