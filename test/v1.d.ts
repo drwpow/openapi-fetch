@@ -72,6 +72,14 @@ export interface paths {
       };
     };
   };
+  "/string-array": {
+    get: {
+      responses: {
+        200: components["responses"]["StringArray"];
+        500: components["responses"]["Error"];
+      };
+    };
+  };
   "/anyMethod": {
     get: {
       responses: {
@@ -141,6 +149,7 @@ export interface components {
       body: string;
       publish_date?: number;
     };
+    StringArray: (string)[];
     User: {
       email: string;
       age?: number;
@@ -162,9 +171,12 @@ export interface components {
         };
       };
     };
-    User: {
+    Error: {
       content: {
-        "application/json": components["schemas"]["User"];
+        "application/json": {
+          code: number;
+          message: string;
+        };
       };
     };
     PostDelete: {
@@ -179,12 +191,14 @@ export interface components {
         "application/json": components["schemas"]["Post"];
       };
     };
-    Error: {
+    StringArray: {
       content: {
-        "application/json": {
-          code: number;
-          message: string;
-        };
+        "application/json": components["schemas"]["StringArray"];
+      };
+    };
+    User: {
+      content: {
+        "application/json": components["schemas"]["User"];
       };
     };
   };

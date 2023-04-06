@@ -27,6 +27,51 @@ describe('createClient', () => {
     expect(client).toHaveProperty('trace');
   });
 
+  it('marks data as undefined, but never both', async () => {
+    const client = createClient<paths>();
+
+    // data
+    fetchMocker.mockResponseOnce(JSON.stringify(['one', 'two', 'three']));
+    const dataRes = await client.get('/string-array', {});
+
+    // … is initially possibly undefined
+    // @ts-expect-error
+    expect(dataRes.data[0]).toBe('one');
+
+    // … is present if error is undefined
+    if (!dataRes.error) {
+      expect(dataRes.data[0]).toBe('one');
+    }
+
+    // … means data is undefined
+    if (dataRes.data) {
+      // @ts-expect-error
+      expect(() => dataRes.error.message).toThrow();
+    }
+
+    // error
+    fetchMocker.mockResponseOnce(() => ({
+      status: 500,
+      body: JSON.stringify({ status: '500', message: 'Something went wrong' }),
+    }));
+    const errorRes = await client.get('/string-array', {});
+
+    // … is initially possibly undefined
+    // @ts-expect-error
+    expect(errorRes.error.message).toBe('Something went wrong');
+
+    // … is present if error is undefined
+    if (!errorRes.data) {
+      expect(errorRes.error.message).toBe('Something went wrong');
+    }
+
+    // … means data is undefined
+    if (errorRes.error) {
+      // @ts-expect-error
+      expect(() => errorRes.data[0]).toThrow();
+    }
+  });
+
   it('respects baseUrl', async () => {
     const client = createClient<paths>({ baseUrl: 'https://myapi.com/v1' });
     fetchMocker.mockResponse(JSON.stringify({ message: 'OK' }));
