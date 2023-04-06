@@ -56,6 +56,13 @@ paths:
           $ref: '#/components/responses/Error'
         500:
           $ref: '#/components/responses/Error'
+  /string-array:
+    get:
+      responses:
+        200:
+          $ref: '#/components/responses/StringArray'
+        500:
+          $ref: '#/components/responses/Error'
   /anyMethod:
     get:
       responses:
@@ -136,6 +143,10 @@ components:
       required:
         - title
         - body
+    StringArray:
+      type: array
+      items:
+        type: string
     User:
       type: object
       properties:
@@ -194,30 +205,6 @@ components:
                 type: string
             required:
               - status
-
-    User:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/User'
-
-    PostDelete:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-            required:
-              - status
-
-    PostGet:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Post'
-
     Error:
       content:
         application/json:
@@ -231,3 +218,28 @@ components:
             required:
               - code
               - message
+    PostDelete:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+            required:
+              - status
+    PostGet:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Post'
+    StringArray:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StringArray'
+    User:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
