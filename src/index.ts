@@ -21,14 +21,10 @@ type PathsWith<T, M extends Method> = {
 }[keyof T];
 
 type PathParams<T> = T extends { parameters: any } ? { params: T['parameters'] } : { params?: BaseParams };
-type MethodParams<T> = T extends {
-  parameters: any;
-}
-  ? { params: T['parameters'] }
-  : { params?: BaseParams };
+type MethodParams<T> = T extends { parameters: any } ? { params: T['parameters'] } : { params?: BaseParams };
 type Params<T> = PathParams<T> & MethodParams<T>;
 type RequestBody<T> = T extends { requestBody: any } ? { body: Unwrap<T['requestBody']> } : { body?: never };
-type FetchOptions<T> = Params<T> & RequestBody<T> & Omit<RequestInit, 'body'>;
+type FetchOptions<T> = Params<T> & RequestBody<T> & Omit<RequestInit, 'body'> & { querySerializer?: (query: any) => string };
 
 type TruncatedResponse = Omit<Response, 'arrayBuffer' | 'blob' | 'body' | 'clone' | 'formData' | 'json' | 'text'>;
 /** Infer request/response from content type */
@@ -105,13 +101,13 @@ export default function createClient<T>(options?: ClientOptions) {
   });
 
   async function coreFetch<U extends keyof T, M extends keyof T[U]>(url: U, fetchOptions: FetchOptions<T[U][M]>): Promise<FetchResponse<T[U][M]>> {
-    let { headers, body, params = {}, ...init } = fetchOptions || {};
+    let { headers, body, params = {}, querySerializer = (q: any) => new URLSearchParams(q).toString(), ...init } = fetchOptions || {};
 
     // URL
     let finalURL = `${options?.baseUrl ?? ''}${url as string}`;
     const { path, query } = (params as BaseParams | undefined) ?? {};
     if (path) for (const [k, v] of Object.entries(path)) finalURL = finalURL.replace(`{${k}}`, encodeURIComponent(`${v}`.trim()));
-    if (query) finalURL = `${finalURL}?${new URLSearchParams(query as any).toString()}`;
+    if (query) finalURL = `${finalURL}?${querySerializer(query as any)}`;
 
     // headers
     const baseHeaders = new Headers(defaultHeaders); // clone defaults (don’t overwrite!)
@@ -145,35 +141,35 @@ export default function createClient<T>(options?: ClientOptions) {
   return {
     /** Call a GET endpoint */
     async get<U extends PathsWith<T, 'get'>, M extends keyof T[U]>(url: U, init: FetchOptions<T[U][M]>) {
-      return coreFetch(url, { ...init, method: 'GET' });
+      return coreFetch(url, { ...init, method: 'GET' } as any);
     },
     /** Call a PUT endpoint */
     async put<U extends PathsWith<T, 'put'>, M extends keyof T[U]>(url: U, init: FetchOptions<T[U][M]>) {
-      return coreFetch(url, { ...init, method: 'PUT' });
+      return coreFetch(url, { ...init, method: 'PUT' } as any);
     },
     /** Call a POST endpoint */
     async post<U extends PathsWith<T, 'post'>, M extends keyof T[U]>(url: U, init: FetchOptions<T[U][M]>) {
-      return coreFetch(url, { ...init, method: 'POST' });
+      return coreFetch(url, { ...init, method: 'POST' } as any);
     },
     /** Call a DELETE endpoint */
     async del<U extends PathsWith<T, 'delete'>, M extends keyof T[U]>(url: U, init: FetchOptions<T[U][M]>) {
-      return coreFetch(url, { ...init, method: 'DELETE' });
+      return coreFetch(url, { ...init, method: 'DELETE' } as any);
     },
     /** Call a OPTIONS endpoint */
     async options<U extends PathsWith<T, 'options'>, M extends keyof T[U]>(url: U, init: FetchOptions<T[U][M]>) {
-      return coreFetch(url, { ...init, method: 'OPTIONS' });
+      return coreFetch(url, { ...init, method: 'OPTIONS' } as any);
     },
     /** Call a HEAD endpoint */
     async head<U extends PathsWith<T, 'head'>, M extends keyof T[U]>(url: U, init: FetchOptions<T[U][M]>) {
-      return coreFetch(url, { ...init, method: 'HEAD' });
+      return coreFetch(url, { ...init, method: 'HEAD' } as any);
     },
     /** Call a PATCH endpoint */
     async patch<U extends PathsWith<T, 'patch'>, M extends keyof T[U]>(url: U, init: FetchOptions<T[U][M]>) {
-      return coreFetch(url, { ...init, method: 'PATCH' });
+      return coreFetch(url, { ...init, method: 'PATCH' } as any);
     },
     /** Call a TRACE endpoint */
     async trace<U extends PathsWith<T, 'trace'>, M extends keyof T[U]>(url: U, init: FetchOptions<T[U][M]>) {
-      return coreFetch(url, { ...init, method: 'TRACE' });
+      return coreFetch(url, { ...init, method: 'TRACE' } as any);
     },
   };
 }
