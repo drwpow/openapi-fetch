@@ -10,6 +10,9 @@ devDependencies:
   del-cli:
     specifier: ^5.0.0
     version: 5.0.0
+  esbuild:
+    specifier: ^0.17.16
+    version: 0.17.16
   openapi-typescript:
     specifier: ^6.2.1
     version: 6.2.1
