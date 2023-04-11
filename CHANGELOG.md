@@ -1,5 +1,12 @@
 # openapi-fetch
 
+## 0.0.7
+
+### Patch Changes
+
+- fce1546: Support "application/json;charset=utf-8" content types (#15). Thanks, [@shinzui](https://github.com/shinzui)!
+- 0899e0e: Add minified build (#18)
+
 ## 0.0.6
 
 ### Patch Changes
