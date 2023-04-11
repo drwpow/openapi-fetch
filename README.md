@@ -198,7 +198,7 @@ export default new Proxy(client, {
     const newClient = createClient<paths>({ headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} });
     return (newClient as any)[key];
   },
-});
+}) as typeof client;
 
 // src/some-other-file.ts
 import client from './lib/api';
