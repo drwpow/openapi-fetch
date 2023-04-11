@@ -171,6 +171,27 @@ describe('get()', () => {
     // expect post_id to be encoded properly
     expect(fetchMocker.mock.calls[0][0]).toBe('/post/post%3Fid%20%3D%20%F0%9F%A5%B4');
   });
+
+  it('serializes params properly', async () => {
+    const client = createClient<paths>();
+    fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
+    await client.get('/post/{post_id}', {
+      params: { path: { post_id: 'my-post' }, query: { a: 1, b: 2 } },
+    });
+
+    expect(fetchMocker.mock.calls[0][0]).toBe('/post/my-post?a=1&b=2');
+  });
+
+  it('serializes params properly with querySerializer', async () => {
+    const client = createClient<paths>();
+    fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
+    await client.get('/post/{post_id}', {
+      params: { path: { post_id: 'my-post' }, query: { a: 1, b: 2 } },
+      querySerializer: (q) => 'asdf',
+    });
+
+    expect(fetchMocker.mock.calls[0][0]).toBe('/post/my-post?asdf');
+  });
 });
 
 describe('post()', () => {
