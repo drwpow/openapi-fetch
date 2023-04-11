@@ -204,6 +204,28 @@ describe('post()', () => {
     expect(error).toBe(undefined);
   });
 
+  it('supports sepecifying utf-8 encoding', async () => {
+    const mockData = { message: 'My reply' };
+    const client = createClient<paths>();
+    fetchMocker.mockResponseOnce(() => ({ status: 201, body: JSON.stringify(mockData) }));
+    const { data, error, response } = await client.post('/create-reply', {
+      body: {
+        message: 'My reply',
+        replied_at: new Date('2023-03-31T12:00:00Z').getTime(),
+      },
+    });
+
+    // assert correct URL was called
+    expect(fetchMocker.mock.calls[0][0]).toBe('/create-reply');
+
+    // assert correct data was returned
+    expect(data).toEqual(mockData);
+    expect(response.status).toBe(201);
+
+    // assert error is empty
+    expect(error).toBe(undefined);
+  });
+
   it('supports optional requestBody', async () => {
     const mockData = { status: 'success' };
     const client = createClient<paths>();

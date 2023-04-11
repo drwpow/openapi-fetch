@@ -22,6 +22,8 @@ type Unwrap<T> = T extends {
   content: { 'application/json': any };
 }
   ? T['content']['application/json']
+  : T extends { content: { 'application/json;charset=utf-8': any } }
+  ? T['content']['application/json;charset=utf-8']
   : T extends { content: { '*/*': any } }
   ? T['content']['*/*']
   : T;
