@@ -63,6 +63,15 @@ export interface paths {
       };
     };
   };
+  "/create-reply": {
+    post: {
+      requestBody: components["requestBodies"]["CreateReply"];
+      responses: {
+        201: components["responses"]["CreateReply"];
+        500: components["responses"]["Error"];
+      };
+    };
+  };
   "/self": {
     get: {
       responses: {
@@ -171,6 +180,13 @@ export interface components {
         };
       };
     };
+    CreateReply: {
+      content: {
+        "application/json;charset=utf-8": {
+          message: string;
+        };
+      };
+    };
     Error: {
       content: {
         "application/json": {
@@ -206,7 +222,7 @@ export interface components {
   requestBodies: {
     CreatePost: {
       content: {
-        "application/json;charset=utf-8": {
+        "application/json": {
           title: string;
           body: string;
           publish_date: number;
@@ -217,6 +233,14 @@ export interface components {
       content: {
         "application/json": {
           description?: string;
+        };
+      };
+    };
+    CreateReply: {
+      content: {
+        "application/json;charset=utf-8": {
+          message: string;
+          replied_at: number;
         };
       };
     };

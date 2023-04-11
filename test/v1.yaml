@@ -46,7 +46,15 @@ paths:
           $ref: '#/components/responses/PostDelete'
         500:
           $ref: '#/components/responses/Error'
-
+  /create-reply:
+    post:
+      requestBody:
+        $ref: '#/components/requestBodies/CreateReply'
+      responses:
+        201:
+          $ref: '#/components/responses/CreateReply'
+        500:
+          $ref: '#/components/responses/Error'
   /self:
     get:
       responses:
@@ -162,7 +170,7 @@ components:
     CreatePost:
       required: true
       content:
-        'application/json;charset=utf-8':
+        application/json:
           schema:
             type: object
             properties:
@@ -184,6 +192,20 @@ components:
             properties:
               description:
                 type: string
+    CreateReply:
+      required: true
+      content:
+        'application/json;charset=utf-8':
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              replied_at:
+                type: number
+            required:
+              - message
+              - replied_at
   responses:
     CreatePost:
       content:
@@ -205,6 +227,16 @@ components:
                 type: string
             required:
               - status
+    CreateReply:
+      content:
+        'application/json;charset=utf-8':
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
     Error:
       content:
         application/json:
