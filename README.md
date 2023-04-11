@@ -147,6 +147,28 @@ const { data, error } = await post('/create-post', {
 
 Note in the `get()` example, the URL was actually `/post/{post_id}`, _not_ `/post/my-post`. The URL matched the OpenAPI schema definition rather than the final URL. This library will replace the path param correctly for you, automatically.
 
+### Query Parameters
+
+To customise the query parameters serialization pass in a `querySerializer` function to any fetch
+method (get, post, etc):
+
+```ts
+import createClient from 'openapi-fetch';
+import { paths } from './v1';
+
+const { get, post } = createClient<paths>();
+
+const { data, error } = await get('/post/{post_id}', {
+  params: {
+    path: { post_id: 'my-post' },
+    query: { version: 2 },
+  },
+  querySerializer: (q) => {
+    return `v=${q.version}`;
+  },
+});
+```
+
 ### 🔒 Handling Auth
 
 Authentication often requires some reactivity dependent on a token. Since this library is so low-level, there are myriad ways to handle it:
