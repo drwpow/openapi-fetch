@@ -146,26 +146,66 @@ const { data, error } = await post('/create-post', {
 
 Note in the `get()` example, the URL was actually `/post/{post_id}`, _not_ `/post/my-post`. The URL matched the OpenAPI schema definition rather than the final URL. This library will replace the path param correctly for you, automatically.
 
-For best results, you can place your API in a common place:
+### 🔒 Handling Auth
+
+Authentication often requires some reactivity dependent on a token. Since this library is so low-level, there are myriad ways to handle it:
+
+#### Nano Stores
+
+Here’s how it can be handled using [nanostores](https://github.com/nanostores/nanostores), a tiny (334 b), universal signals store:
 
 ```ts
-// /src/lib/api/index.ts
+// src/lib/api/index.ts
+import { atom, computed } from 'nanostores';
 import createClient from 'openapi-fetch';
 import { paths } from './v1';
 
-const { get, put, post, del, options, head, patch, trace } = createClient({
-  baseUrl: 'https://',
-  headers: {
-    Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-  },
+export const authToken = atom<string | undefined>();
+someAuthMethod().then((newToken) => authToken.set(newToken));
+
+export const client = computed(authToken, (currentToken) =>
+  createClient<paths>({
+    headers: currentToken ? { Authorization: `Bearer ${currentToken}` } : {},
+  })
+);
+
+// src/some-other-file.ts
+import { client } from './lib/api';
+
+const { get, post } = client.get();
+
+get('/some-authenticated-url', {
+  /* … */
 });
-export { get, put, post, del, options, head, patch, trace };
 ```
 
-Then import it everywhere else:
+#### Vanilla JS Proxies
+
+You can also use [proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) which are now supported in all modern browsers:
 
 ```ts
-import { get } from '../lib/api';
+// src/lib/api/index.ts
+import createClient from 'openapi-fetch';
+import { paths } from './v1';
+
+let authToken: string | undefined = undefined;
+someAuthMethod().then((newToken) => (authToken = newToken));
+
+const client = createClient<paths>();
+
+export default new Proxy(client, {
+  get(target, key) {
+    const newClient = createClient<paths>({ headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} });
+    return (newClient as any)[key];
+  },
+});
+
+// src/some-other-file.ts
+import client from './lib/api';
+
+client.get('/some-authenticated-url', {
+  /* … */
+});
 ```
 
 ## 🎛️ Config
