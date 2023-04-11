@@ -187,10 +187,10 @@ describe('get()', () => {
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
     await client.get('/post/{post_id}', {
       params: { path: { post_id: 'my-post' }, query: { a: 1, b: 2 } },
-      querySerializer: (q) => 'asdf',
+      querySerializer: (q) => `alpha=${q.a}&beta=${q.b}`,
     });
 
-    expect(fetchMocker.mock.calls[0][0]).toBe('/post/my-post?asdf');
+    expect(fetchMocker.mock.calls[0][0]).toBe('/post/my-post?alpha=1&beta=2');
   });
 });
 
