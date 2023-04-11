@@ -162,7 +162,7 @@ components:
     CreatePost:
       required: true
       content:
-        "application/json;charset=utf-8":
+        'application/json;charset=utf-8':
           schema:
             type: object
             properties:
