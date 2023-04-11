@@ -206,7 +206,7 @@ export interface components {
   requestBodies: {
     CreatePost: {
       content: {
-        "application/json": {
+        "application/json;charset=utf-8": {
           title: string;
           body: string;
           publish_date: number;
