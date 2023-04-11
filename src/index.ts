@@ -59,7 +59,7 @@ export default function createClient<T>(defaultOptions?: ClientOptions) {
     : { params?: BaseParams };
   type Params<T> = PathParams<T> & MethodParams<T>;
   type RequestBody<T> = T extends { requestBody: any } ? { body: Unwrap<T['requestBody']> } : { body?: never };
-  type FetchOptions<T> = Params<T> & RequestBody<T> & Omit<RequestInit, 'body'>;
+  type FetchOptions<T> = Params<T> & RequestBody<T> & { querySerializer?: (q: any) => string } & Omit<RequestInit, 'body'>;
   type Success<T> = T extends { 200: any } ? T[200] : T extends { 201: any } ? T[201] : T extends { 202: any } ? T[202] : T extends { default: any } ? T['default'] : unknown;
   type Error<T> = T extends { 500: any }
     ? T[500]
@@ -106,12 +106,14 @@ export default function createClient<T>(defaultOptions?: ClientOptions) {
     : unknown;
 
   async function coreFetch<U extends keyof T, M extends keyof T[U]>(url: U, options: FetchOptions<T[U][M]>): Promise<FetchResponse<T[U][M]>> {
-    let { headers, body, params = {}, ...init } = options || {};
+    let { headers, body, params = {}, querySerializer = (q: any) => new URLSearchParams(q).toString(), ...init } = options || {};
     // URL
     let finalURL = `${defaultOptions?.baseUrl ?? ''}${url as string}`;
     const { path, query } = (params as BaseParams | undefined) ?? {};
     if (path) for (const [k, v] of Object.entries(path)) finalURL = finalURL.replace(`{${k}}`, encodeURIComponent(`${v}`.trim()));
-    if (query) finalURL = `${finalURL}?${new URLSearchParams(query as any).toString()}`;
+    if (query) {
+      finalURL = `${finalURL}?${querySerializer(query)}`;
+    }
     // headers
     const baseHeaders = new Headers(defaultHeaders); // clone defaults (don’t overwrite!)
     const headerOverrides = new Headers(headers);
