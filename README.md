@@ -163,9 +163,7 @@ const { data, error } = await get('/post/{post_id}', {
     path: { post_id: 'my-post' },
     query: { version: 2 },
   },
-  querySerializer: (q) => {
-    return `v=${q.version}`;
-  },
+  querySerializer: (q) => `v=${q.version}`,
 });
 ```
 
