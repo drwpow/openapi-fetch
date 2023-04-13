@@ -2,6 +2,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "declaration": true,
+    "downlevelIteration": false,
     "esModuleInterop": true,
     "module": "ESNext",
     "moduleResolution": "nodenext",
