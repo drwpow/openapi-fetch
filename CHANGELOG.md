@@ -1,5 +1,11 @@
 # openapi-fetch
 
+## 0.0.8
+
+### Patch Changes
+
+- 8e7cb46: Fix TypeScript lib error, simplify generated types
+
 ## 0.0.7
 
 ### Patch Changes
