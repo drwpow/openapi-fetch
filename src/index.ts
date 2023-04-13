@@ -101,7 +101,7 @@ export default function createClient<T>(options?: ClientOptions) {
   });
 
   async function coreFetch<U extends keyof T, M extends keyof T[U]>(url: U, fetchOptions: FetchOptions<T[U][M]>): Promise<FetchResponse<T[U][M]>> {
-    let { headers, body, params = {}, querySerializer = (q: any) => new URLSearchParams(q).toString(), ...init } = fetchOptions || {};
+    let { headers, body: requestBody, params = {}, querySerializer = (q: any) => new URLSearchParams(q).toString(), ...init } = fetchOptions || {};
 
     // URL
     let finalURL = `${options?.baseUrl ?? ''}${url as string}`;
@@ -123,7 +123,7 @@ export default function createClient<T>(options?: ClientOptions) {
       ...options,
       ...init,
       headers: baseHeaders,
-      body: typeof body === 'string' ? body : JSON.stringify(body),
+      body: typeof requestBody === 'string' ? requestBody : JSON.stringify(requestBody),
     });
     const response: TruncatedResponse = {
       bodyUsed: res.bodyUsed,
@@ -135,7 +135,10 @@ export default function createClient<T>(options?: ClientOptions) {
       type: res.type,
       url: res.url,
     };
-    return res.ok ? { data: res.status === 204 ? {} : await res.json(), response } : { error: await res.json(), response };
+
+    const contentLength = res.headers.get('Content-Length');
+    const bodyParsed = res.status !== 204 && contentLength !== '0' ? await res.json() : {};
+    return res.ok ? { data: bodyParsed, response } : { error: bodyParsed, response };
   }
 
   return {
