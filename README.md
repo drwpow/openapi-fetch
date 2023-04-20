@@ -218,6 +218,12 @@ client.get('/some-authenticated-url', {
 
 In addition, you may pass any other [fetch options](https://developer.mozilla.org/en-US/docs/Web/API/fetch) such as `headers`, `mode`, `credentials`, `redirect`, etc. ([docs](https://developer.mozilla.org/en-US/docs/Web/API/fetch)).
 
+## 🎯 Project Goals
+
+1. Infer types automatically from OpenAPI schemas **without generics** (or, only the absolute minimum needed)
+2. Respect the native `fetch()` API while reducing boilerplate (such as `await res.json()`)
+3. Be as small and light as possible
+
 ## 🧙‍♀️ Advanced
 
 ### Caching
@@ -231,7 +237,3 @@ This library is identical in purpose to [openapi-typescript-fetch](https://githu
 - This library has a built-in `error` type for `3xx`/`4xx`/`5xx` errors whereas openapi-typescript-fetch throws exceptions (requiring you to wrap things in `try/catch`)
 - This library has a more terse syntax (`get(…)`) wheras openapi-typescript-fetch requires chaining (`.path(…).method(…).create()`)
 - openapi-typescript-fetch supports middleware whereas this library doesn’t
-
-### Status Code Polymorphism
-
-This library assumes that your API returns one “good” status at `200`, `201`, or `default`, and one “bad” status at `500`, `404`, or `default`. Returning multiple “good” and “bad” statuses for the same endpoint isn’t currently supported.
