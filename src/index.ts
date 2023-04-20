@@ -125,9 +125,10 @@ export default function createClient<T>(options?: ClientOptions) {
       headers: baseHeaders,
       body: typeof requestBody === 'string' ? requestBody : JSON.stringify(requestBody),
     });
+    const respHeaders = res.headers;
     const response: TruncatedResponse = {
       bodyUsed: res.bodyUsed,
-      headers: res.headers,
+      headers: respHeaders,
       ok: res.ok,
       redirected: res.redirected,
       status: res.status,
