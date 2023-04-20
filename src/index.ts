@@ -139,7 +139,7 @@ export default function createClient<T>(options?: ClientOptions) {
       type: res.type,
       url: res.url,
     };
-    return res.ok ? { data: await res.json(), response } : { error: await res.json(), response };
+    return res.ok ? { data: res.status === 204 ? {} : await res.json(), response } : { error: await res.json(), response };
   }
 
   return {

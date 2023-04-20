@@ -249,6 +249,25 @@ describe('post()', () => {
       body: { foo: 'Bar' },
     });
   });
+
+  it('returns empty object on 204', async () => {
+    const client = createClient<paths>();
+    fetchMocker.mockResponseOnce(() => ({ status: 204, body: '' }));
+    const { data, error, response } = await client.post('/create-tag/{name}', {
+      params: { path: { name: 'New Tag' } },
+      body: { description: 'This is a new tag' },
+    });
+
+    // assert correct URL was called
+    expect(fetchMocker.mock.calls[0][0]).toBe('/create-tag/New%20Tag');
+
+    // assert correct data was returned
+    expect(data).toEqual({});
+    expect(response.status).toBe(204);
+
+    // assert error is empty
+    expect(error).toBe(undefined);
+  });
 });
 
 describe('delete()', () => {
@@ -257,6 +276,24 @@ describe('delete()', () => {
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
     await client.del('/' as any, {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('DELETE');
+  });
+
+  it('returns empty object on 204', async () => {
+    const client = createClient<paths>();
+    fetchMocker.mockResponseOnce(() => ({ status: 204, body: '' }));
+    const { data, error, response } = await client.del('/post/{post_id}', {
+      params: { path: { post_id: '123' } },
+    });
+
+    // assert correct URL was called
+    expect(fetchMocker.mock.calls[0][0]).toBe('/post/123');
+
+    // assert correct data was returned
+    expect(data).toEqual({});
+    expect(response.status).toBe(204);
+
+    // assert error is empty
+    expect(error).toBe(undefined);
   });
 });
 
