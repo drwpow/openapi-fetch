@@ -1,3 +1,4 @@
+import { atom, computed } from 'nanostores';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 // @ts-expect-error
 import createFetchMock from 'vitest-fetch-mock';
@@ -330,5 +331,59 @@ describe('trace()', () => {
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
     await client.trace('/' as any, {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('TRACE');
+  });
+});
+
+// test that the library behaves as expected inside commonly-used patterns
+describe('examples', () => {
+  it('nanostores', async () => {
+    const token = atom<string | undefined>();
+    const client = computed([token], (currentToken) => createClient<paths>({ headers: currentToken ? { Authorization: `Bearer ${currentToken}` } : {} }));
+
+    // assert initial call is unauthenticated
+    fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
+    await client.get().get('/post/{post_id}', { params: { path: { post_id: '1234' } } });
+    expect(fetchMocker.mock.calls[0][1].headers.get('authorization')).toBeNull();
+
+    // assert after setting token, client is authenticated
+    const tokenVal = 'abcd';
+    fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
+    await new Promise<void>((resolve) =>
+      setTimeout(() => {
+        token.set(tokenVal); // simulate promise-like token setting
+        resolve();
+      }, 0)
+    );
+    await client.get().get('/post/{post_id}', { params: { path: { post_id: '1234' } } });
+    expect(fetchMocker.mock.calls[1][1].headers.get('authorization')).toBe(`Bearer ${tokenVal}`);
+  });
+
+  it('proxies', async () => {
+    let token: string | undefined = undefined;
+
+    const baseClient = createClient<paths>();
+    const client = new Proxy(baseClient, {
+      get(_, key: keyof typeof baseClient) {
+        const newClient = createClient<paths>({ headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        return newClient[key];
+      },
+    });
+
+    // assert initial call is unauthenticated
+    fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
+    await client.get('/post/{post_id}', { params: { path: { post_id: '1234' } } });
+    expect(fetchMocker.mock.calls[0][1].headers.get('authorization')).toBeNull();
+
+    // assert after setting token, client is authenticated
+    const tokenVal = 'abcd';
+    fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
+    await new Promise<void>((resolve) =>
+      setTimeout(() => {
+        token = tokenVal; // simulate promise-like token setting
+        resolve();
+      }, 0)
+    );
+    await client.get('/post/{post_id}', { params: { path: { post_id: '1234' } } });
+    expect(fetchMocker.mock.calls[1][1].headers.get('authorization')).toBe(`Bearer ${tokenVal}`);
   });
 });
