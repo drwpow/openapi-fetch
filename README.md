@@ -191,14 +191,13 @@ import { paths } from './v1';
 let authToken: string | undefined = undefined;
 someAuthMethod().then((newToken) => (authToken = newToken));
 
-const client = createClient<paths>();
-
-export default new Proxy(client, {
-  get(target, key) {
+const baseClient = createClient<paths>();
+export default new Proxy(baseClient, {
+  get(_, key: keyof typeof baseClient) {
     const newClient = createClient<paths>({ headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} });
-    return (newClient as any)[key];
+    return newClient[key];
   },
-}) as typeof client;
+});
 
 // src/some-other-file.ts
 import client from './lib/api';
