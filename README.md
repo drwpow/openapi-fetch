@@ -48,7 +48,7 @@ Notice **there are no generics, and no manual typing.** Your endpoint’s exact 
 
 ## 🔧 Setup
 
-First, install this package and [openapi-typescript](https://github.com/drwpow/openapi-typescript) from NPM:
+First, install this package and [openapi-typescript](https://github.com/drwpow/openapi-typescript) from npm:
 
 ```
 npm i openapi-fetch
