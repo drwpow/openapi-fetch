@@ -48,10 +48,11 @@ Notice **there are no generics, and no manual typing.** Your endpoint’s exact 
 
 ## 🔧 Setup
 
-First install this package and [openapi-typescript](https://github.com/drwpow/openapi-typescript) from npm:
+First, install this package and [openapi-typescript](https://github.com/drwpow/openapi-typescript) from NPM:
 
 ```
-npm i -D openapi-fetch openapi-typescript
+npm i openapi-fetch
+npm i -D openapi-typescript
 ```
 
 Next, generate TypeScript types from your OpenAPI schema using openapi-typescript:
