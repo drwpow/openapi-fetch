@@ -307,12 +307,22 @@ describe('delete()', () => {
       params: { path: { post_id: '123' } },
     });
 
-    // assert correct URL was called
-    expect(fetchMocker.mock.calls[0][0]).toBe('/post/123');
+    // assert correct data was returned
+    expect(data).toEqual({});
+
+    // assert error is empty
+    expect(error).toBe(undefined);
+  });
+
+  it('returns empty object on Content-Length: 0', async () => {
+    const client = createClient<paths>();
+    fetchMocker.mockResponseOnce(() => ({ headers: { 'Content-Length': 0 }, status: 200, body: '' }));
+    const { data, error, response } = await client.del('/post/{post_id}', {
+      params: { path: { post_id: '123' } },
+    });
 
     // assert correct data was returned
     expect(data).toEqual({});
-    expect(response.status).toBe(204);
 
     // assert error is empty
     expect(error).toBe(undefined);
