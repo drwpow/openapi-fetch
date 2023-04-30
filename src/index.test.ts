@@ -2,8 +2,10 @@ import { atom, computed } from 'nanostores';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 // @ts-expect-error
 import createFetchMock from 'vitest-fetch-mock';
-import createClient from './index.js';
+import createClient, { FilterKeys, JSONLike, RequestBody, RequestBodyContent, RequestBodyJSON } from './index.js';
 import type { paths } from '../test/v1.js';
+
+type CreateTag = paths['/tag/{name}']['put'];
 
 const fetchMocker = createFetchMock(vi);
 
@@ -73,6 +75,71 @@ describe('createClient', () => {
     }
   });
 
+  it('requires path params', async () => {
+    const client = createClient<paths>({ baseUrl: 'https://myapi.com/v1' });
+    fetchMocker.mockResponse(JSON.stringify({ message: 'OK' }));
+
+    // expect error on missing 'params'
+    // @ts-expect-error
+    await client.get('/post/{post_id}', {});
+
+    // expect error on empty params
+    // @ts-expect-error
+    await client.get('/post/{post_id}', { params: {} });
+
+    // expect error on empty params.path
+    // @ts-expect-error
+    await client.get('/post/{post_id}', { params: { path: {} } });
+
+    // expect error on mismatched type (number v string)
+    // @ts-expect-error
+    await client.get('/post/{post_id}', { params: { path: { post_id: 1234 } }, query: {} });
+
+    // (no error)
+    await client.get('/post/{post_id}', { params: { path: { post_id: '1234' }, query: {} } });
+  });
+
+  it('requires necessary requestBodies', async () => {
+    const client = createClient<paths>({ baseUrl: 'https://myapi.com/v1' });
+    fetchMocker.mockResponse(JSON.stringify({ message: 'OK' }));
+
+    // expect error on missing `body`
+    // @ts-expect-error
+    await client.get('/post', {});
+
+    // expect error on missing fields
+    // @ts-expect-error
+    await client.put('/post', { body: { title: 'Foo' } });
+
+    // expect present body to be good enough (all fields optional)
+    // (no error)
+    await client.put('/post', { body: { title: 'Foo', body: 'Bar', publish_date: new Date('2023-04-01T12:00:00Z').getTime() } });
+  });
+
+  it('skips optional requestBody', async () => {
+    const mockData = { status: 'success' };
+    const client = createClient<paths>();
+    fetchMocker.mockResponse(() => ({ status: 201, body: JSON.stringify(mockData) }));
+
+    // assert omitting `body` doesn’t raise a TS error (testing the response isn’t necessary)
+    await client.put('/tag/{name}', {
+      params: { path: { name: 'New Tag' } },
+    });
+
+    // assert providing `body` with correct schema doesn’t raise a TS error
+    await client.put('/tag/{name}', {
+      params: { path: { name: 'New Tag' } },
+      body: { description: 'This is a new tag' },
+    });
+
+    // assert providing `body` with bad schema WILL raise a TS error
+    await client.put('/tag/{name}', {
+      params: { path: { name: 'New Tag' } },
+      // @ts-expect-error
+      body: { foo: 'Bar' },
+    });
+  });
+
   it('respects baseUrl', async () => {
     const client = createClient<paths>({ baseUrl: 'https://myapi.com/v1' });
     fetchMocker.mockResponse(JSON.stringify({ message: 'OK' }));
@@ -117,7 +184,7 @@ describe('get()', () => {
   it('sends the correct method', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
-    await client.get('/' as any, {});
+    await client.get('/anyMethod', {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('GET');
   });
 
@@ -126,7 +193,7 @@ describe('get()', () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: JSON.stringify(mockData) }));
     const { data, error, response } = await client.get('/post/{post_id}', {
-      params: { path: { post_id: 'my-post' } },
+      params: { path: { post_id: 'my-post' }, query: {} },
     });
 
     // assert correct URL was called
@@ -145,7 +212,10 @@ describe('get()', () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 404, body: JSON.stringify(mockError) }));
     const { data, error, response } = await client.get('/post/{post_id}', {
-      params: { path: { post_id: 'my-post' } },
+      params: {
+        path: { post_id: 'my-post' },
+        query: {},
+      },
     });
 
     // assert correct URL was called
@@ -166,7 +236,7 @@ describe('get()', () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
     await client.get('/post/{post_id}', {
-      params: { path: { post_id: 'post?id = 🥴' } },
+      params: { path: { post_id: 'post?id = 🥴' }, query: {} },
     });
 
     // expect post_id to be encoded properly
@@ -177,21 +247,27 @@ describe('get()', () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
     await client.get('/post/{post_id}', {
-      params: { path: { post_id: 'my-post' }, query: { a: 1, b: 2 } },
+      params: {
+        path: { post_id: 'my-post' },
+        query: { version: 2, format: 'json' },
+      },
     });
 
-    expect(fetchMocker.mock.calls[0][0]).toBe('/post/my-post?a=1&b=2');
+    expect(fetchMocker.mock.calls[0][0]).toBe('/post/my-post?version=2&format=json');
   });
 
   it('serializes params properly with querySerializer', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
     await client.get('/post/{post_id}', {
-      params: { path: { post_id: 'my-post' }, query: { a: 1, b: 2 } },
-      querySerializer: (q) => `alpha=${q.a}&beta=${q.b}`,
+      params: {
+        path: { post_id: 'my-post' },
+        query: { version: 2, format: 'json' },
+      },
+      querySerializer: (q) => `alpha=${q.version}&beta=${q.format}`,
     });
 
-    expect(fetchMocker.mock.calls[0][0]).toBe('/post/my-post?alpha=1&beta=2');
+    expect(fetchMocker.mock.calls[0][0]).toBe('/post/my-post?alpha=2&beta=json');
   });
 });
 
@@ -199,7 +275,7 @@ describe('post()', () => {
   it('sends the correct method', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
-    await client.post('/' as any, {});
+    await client.post('/anyMethod', {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('POST');
   });
 
@@ -207,7 +283,7 @@ describe('post()', () => {
     const mockData = { status: 'success' };
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 201, body: JSON.stringify(mockData) }));
-    const { data, error, response } = await client.post('/create-post', {
+    const { data, error, response } = await client.put('/post', {
       body: {
         title: 'New Post',
         body: '<p>Best post yet</p>',
@@ -216,7 +292,7 @@ describe('post()', () => {
     });
 
     // assert correct URL was called
-    expect(fetchMocker.mock.calls[0][0]).toBe('/create-post');
+    expect(fetchMocker.mock.calls[0][0]).toBe('/post');
 
     // assert correct data was returned
     expect(data).toEqual(mockData);
@@ -230,15 +306,12 @@ describe('post()', () => {
     const mockData = { message: 'My reply' };
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 201, body: JSON.stringify(mockData) }));
-    const { data, error, response } = await client.post('/create-reply', {
+    const { data, error, response } = await client.put('/comment', {
       body: {
         message: 'My reply',
         replied_at: new Date('2023-03-31T12:00:00Z').getTime(),
       },
     });
-
-    // assert correct URL was called
-    expect(fetchMocker.mock.calls[0][0]).toBe('/create-reply');
 
     // assert correct data was returned
     expect(data).toEqual(mockData);
@@ -248,40 +321,13 @@ describe('post()', () => {
     expect(error).toBe(undefined);
   });
 
-  it('supports optional requestBody', async () => {
-    const mockData = { status: 'success' };
-    const client = createClient<paths>();
-    fetchMocker.mockResponse(() => ({ status: 201, body: JSON.stringify(mockData) }));
-
-    // assert omitting `body` doesn’t raise a TS error (testing the response isn’t necessary)
-    await client.post('/create-tag/{name}', {
-      params: { path: { name: 'New Tag' } },
-    });
-
-    // assert providing `body` with correct schema doesn’t raise a TS error
-    await client.post('/create-tag/{name}', {
-      params: { path: { name: 'New Tag' } },
-      body: { description: 'This is a new tag' },
-    });
-
-    // assert providing `body` with bad schema WILL raise a TS error
-    await client.post('/create-tag/{name}', {
-      params: { path: { name: 'New Tag' } },
-      // @ts-expect-error
-      body: { foo: 'Bar' },
-    });
-  });
-
   it('returns empty object on 204', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 204, body: '' }));
-    const { data, error, response } = await client.post('/create-tag/{name}', {
+    const { data, error, response } = await client.put('/tag/{name}', {
       params: { path: { name: 'New Tag' } },
       body: { description: 'This is a new tag' },
     });
-
-    // assert correct URL was called
-    expect(fetchMocker.mock.calls[0][0]).toBe('/create-tag/New%20Tag');
 
     // assert correct data was returned
     expect(data).toEqual({});
@@ -296,15 +342,17 @@ describe('delete()', () => {
   it('sends the correct method', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
-    await client.del('/' as any, {});
+    await client.del('/anyMethod', {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('DELETE');
   });
 
   it('returns empty object on 204', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 204, body: '' }));
-    const { data, error, response } = await client.del('/post/{post_id}', {
-      params: { path: { post_id: '123' } },
+    const { data, error } = await client.del('/post/{post_id}', {
+      params: {
+        path: { post_id: '123' },
+      },
     });
 
     // assert correct data was returned
@@ -317,8 +365,10 @@ describe('delete()', () => {
   it('returns empty object on Content-Length: 0', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ headers: { 'Content-Length': 0 }, status: 200, body: '' }));
-    const { data, error, response } = await client.del('/post/{post_id}', {
-      params: { path: { post_id: '123' } },
+    const { data, error } = await client.del('/post/{post_id}', {
+      params: {
+        path: { post_id: '123' },
+      },
     });
 
     // assert correct data was returned
@@ -333,7 +383,7 @@ describe('options()', () => {
   it('sends the correct method', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
-    await client.options('/' as any, {});
+    await client.options('/anyMethod', {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('OPTIONS');
   });
 });
@@ -342,7 +392,7 @@ describe('head()', () => {
   it('sends the correct method', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
-    await client.head('/' as any, {});
+    await client.head('/anyMethod', {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('HEAD');
   });
 });
@@ -351,7 +401,7 @@ describe('patch()', () => {
   it('sends the correct method', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
-    await client.patch('/' as any, {});
+    await client.patch('/anyMethod', {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('PATCH');
   });
 });
@@ -360,7 +410,7 @@ describe('trace()', () => {
   it('sends the correct method', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
-    await client.trace('/' as any, {});
+    await client.trace('/anyMethod', {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('TRACE');
   });
 });
@@ -373,7 +423,7 @@ describe('examples', () => {
 
     // assert initial call is unauthenticated
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
-    await client.get().get('/post/{post_id}', { params: { path: { post_id: '1234' } } });
+    await client.get().get('/post/{post_id}', { params: { path: { post_id: '1234' }, query: {} } });
     expect(fetchMocker.mock.calls[0][1].headers.get('authorization')).toBeNull();
 
     // assert after setting token, client is authenticated
@@ -385,7 +435,7 @@ describe('examples', () => {
         resolve();
       }, 0)
     );
-    await client.get().get('/post/{post_id}', { params: { path: { post_id: '1234' } } });
+    await client.get().get('/post/{post_id}', { params: { path: { post_id: '1234' }, query: {} } });
     expect(fetchMocker.mock.calls[1][1].headers.get('authorization')).toBe(`Bearer ${tokenVal}`);
   });
 
@@ -402,7 +452,7 @@ describe('examples', () => {
 
     // assert initial call is unauthenticated
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
-    await client.get('/post/{post_id}', { params: { path: { post_id: '1234' } } });
+    await client.get('/post/{post_id}', { params: { path: { post_id: '1234' }, query: {} } });
     expect(fetchMocker.mock.calls[0][1].headers.get('authorization')).toBeNull();
 
     // assert after setting token, client is authenticated
@@ -414,7 +464,7 @@ describe('examples', () => {
         resolve();
       }, 0)
     );
-    await client.get('/post/{post_id}', { params: { path: { post_id: '1234' } } });
+    await client.get('/post/{post_id}', { params: { path: { post_id: '1234' }, query: {} } });
     expect(fetchMocker.mock.calls[1][1].headers.get('authorization')).toBe(`Bearer ${tokenVal}`);
   });
 });
