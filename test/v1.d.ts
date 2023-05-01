@@ -5,8 +5,17 @@
 
 
 export interface paths {
-  "/create-post": {
-    post: {
+  "/comment": {
+    put: {
+      requestBody: components["requestBodies"]["CreateReply"];
+      responses: {
+        201: components["responses"]["CreateReply"];
+        500: components["responses"]["Error"];
+      };
+    };
+  };
+  "/post": {
+    put: {
       requestBody: components["requestBodies"]["CreatePost"];
       responses: {
         201: components["responses"]["CreatePost"];
@@ -14,28 +23,13 @@ export interface paths {
       };
     };
   };
-  "/create-tag/{name}": {
-    post: {
-      parameters: {
-        path: {
-          name: string;
-        };
-      };
-      requestBody: components["requestBodies"]["CreateTag"];
-      responses: {
-        201: components["responses"]["CreateTag"];
-        500: components["responses"]["Error"];
-      };
-    };
-    parameters: {
-      path: {
-        name: string;
-      };
-    };
-  };
   "/post/{post_id}": {
     get: {
       parameters: {
+        query: {
+          version?: number;
+          format?: string;
+        };
         path: {
           post_id: string;
         };
@@ -57,18 +51,22 @@ export interface paths {
         500: components["responses"]["Error"];
       };
     };
+    patch: {
+      parameters: {
+        path: {
+          post_id: string;
+        };
+      };
+      requestBody: components["requestBodies"]["PatchPost"];
+      responses: {
+        200: copmonents["responses"]["PatchPost"];
+        404: components["responses"]["Error"];
+        500: components["responses"]["Error"];
+      };
+    };
     parameters: {
       path: {
         post_id: string;
-      };
-    };
-  };
-  "/create-reply": {
-    post: {
-      requestBody: components["requestBodies"]["CreateReply"];
-      responses: {
-        201: components["responses"]["CreateReply"];
-        500: components["responses"]["Error"];
       };
     };
   };
@@ -86,6 +84,25 @@ export interface paths {
       responses: {
         200: components["responses"]["StringArray"];
         500: components["responses"]["Error"];
+      };
+    };
+  };
+  "/tag/{name}": {
+    put: {
+      parameters: {
+        path: {
+          name: string;
+        };
+      };
+      requestBody: components["requestBodies"]["CreateTag"];
+      responses: {
+        201: components["responses"]["CreateTag"];
+        500: components["responses"]["Error"];
+      };
+    };
+    parameters: {
+      path: {
+        name: string;
       };
     };
   };
@@ -241,6 +258,16 @@ export interface components {
         "application/json;charset=utf-8": {
           message: string;
           replied_at: number;
+        };
+      };
+    };
+    PatchPost: {
+      content: {
+        "application/json": {
+          properties?: null;
+          title?: string;
+          body?: string;
+          publish_date?: number;
         };
       };
     };
