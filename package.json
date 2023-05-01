@@ -30,7 +30,7 @@
     "build": "npm run build:clean && npm run build:ts && npm run build:ts-min",
     "build:clean": "del dist",
     "build:ts": "tsc -p tsconfig.build.json",
-    "build:ts-min": "esbuild --bundle src/index.ts --format=esm --minify --outfile=dist/index.min.js",
+    "build:ts-min": "esbuild --bundle src/index.ts --format=esm --minify --outfile=dist/index.min.js && cp dist/index.d.ts dist/index.min.d.ts",
     "lint": "npm run lint:js",
     "lint:js": "npx prettier --check \"{src,test}/**/*\"",
     "test": "npm run test:ts && npm run test:js",
