@@ -147,10 +147,9 @@ const { data, error } = await post('/create-post', {
 
 Note in the `get()` example, the URL was actually `/post/{post_id}`, _not_ `/post/my-post`. The URL matched the OpenAPI schema definition rather than the final URL. This library will replace the path param correctly for you, automatically.
 
-### Query Parameters
+### 🔀 Parameter Serialization
 
-To customise the query parameters serialization pass in a `querySerializer` function to any fetch
-method (get, post, etc):
+In the spirit of being lightweight, this library only uses [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) to [serialize parameters](https://swagger.io/docs/specification/serialization/). So for complex query param types (e.g. arrays) you’ll need to provide your own `querySerializer()` method that transforms query params into a URL-safe string:
 
 ```ts
 import createClient from 'openapi-fetch';

@@ -1,5 +1,18 @@
 # openapi-fetch
 
+## 0.1.0
+
+### Minor Changes
+
+- f878cd3: Add querySerializer
+
+### Patch Changes
+
+- 22197a1: Add missing type defs for minified build
+- ff3174a: Fix type inference bugs
+- 4ce3828: Skip parsing JSON for empty responses (#23)
+- ff3ae1b: Skip parsing JSON for 204 responses (#28)
+
 ## 0.0.8
 
 ### Patch Changes
