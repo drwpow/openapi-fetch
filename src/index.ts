@@ -37,12 +37,11 @@ export type RequestBodyJSON<OperationObj> = FilterKeys<RequestBodyContent<Operat
 export type RequestBody<OperationObj> = undefined extends RequestBodyJSON<OperationObj> ? { body?: RequestBodyJSON<OperationObj> } : { body: RequestBodyJSON<OperationObj> };
 export type QuerySerializer<OperationObj> = { querySerializer?: (query: OperationObj extends { parameters: { query: any } } ? OperationObj['parameters']['query'] : Record<string, unknown>) => string };
 export type FetchOptions<OperationObj> = Params<OperationObj> & RequestBody<OperationObj> & Omit<RequestInit, 'body'> & QuerySerializer<OperationObj>;
-export type TruncatedResponse = Omit<Response, 'arrayBuffer' | 'blob' | 'body' | 'clone' | 'formData' | 'json' | 'text'>;
 export type Success<OperationObj> = FilterKeys<FilterKeys<OperationObj, OkStatus>, 'content'>;
 export type Error<OperationObj> = FilterKeys<FilterKeys<OperationObj, ErrorStatus>, 'content'>;
 export type FetchResponse<T> =
-  | { data: T extends { responses: any } ? NonNullable<FilterKeys<Success<T['responses']>, JSONLike>> : unknown; error?: never; response: TruncatedResponse }
-  | { data?: never; error: T extends { responses: any } ? NonNullable<FilterKeys<Error<T['responses']>, JSONLike>> : unknown; response: TruncatedResponse };
+  | { data: T extends { responses: any } ? NonNullable<FilterKeys<Success<T['responses']>, JSONLike>> : unknown; error?: never; response: Response }
+  | { data?: never; error: T extends { responses: any } ? NonNullable<FilterKeys<Error<T['responses']>, JSONLike>> : unknown; response: Response };
 
 export default function createClient<Paths extends {}>(options?: ClientOptions) {
   const defaultHeaders = new Headers({
@@ -71,26 +70,17 @@ export default function createClient<Paths extends {}>(options?: ClientOptions) 
     }
 
     // fetch!
-    const res = await fetch(finalURL, {
+    const response = await fetch(finalURL, {
       redirect: 'follow',
       ...options,
       ...init,
       headers: baseHeaders,
       body: typeof requestBody === 'string' ? requestBody : JSON.stringify(requestBody),
     });
-    const response: TruncatedResponse = {
-      bodyUsed: res.bodyUsed,
-      headers: res.headers,
-      ok: res.ok,
-      redirected: res.redirected,
-      status: res.status as any,
-      statusText: res.statusText,
-      type: res.type,
-      url: res.url,
-    };
+
     // don’t parse JSON if status is 204, or Content-Length is '0'
-    const body = res.status === 204 || res.headers.get('Content-Length') === '0' ? {} : await res.json();
-    return res.ok ? { data: body, response } : { error: body, response: response };
+    const body = response.status === 204 || response.headers.get('Content-Length') === '0' ? {} : await response.json();
+    return response.ok ? { data: body, response } : { error: body, response: response };
   }
 
   return {
