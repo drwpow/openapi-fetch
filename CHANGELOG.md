@@ -1,5 +1,11 @@
 # openapi-fetch
 
+## 0.1.1
+
+### Patch Changes
+
+- 5d1fb7d: Fix bad HTTP method lookup causing polymorphsim
+
 ## 0.1.0
 
 ### Minor Changes
