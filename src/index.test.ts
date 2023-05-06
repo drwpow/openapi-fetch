@@ -16,7 +16,7 @@ afterEach(() => {
   fetchMocker.resetMocks();
 });
 
-describe('createClient', () => {
+describe('client', () => {
   it('generates all proper functions', () => {
     const client = createClient<paths>();
 
@@ -113,7 +113,9 @@ describe('createClient', () => {
 
     // expect present body to be good enough (all fields optional)
     // (no error)
-    await client.put('/post', { body: { title: 'Foo', body: 'Bar', publish_date: new Date('2023-04-01T12:00:00Z').getTime() } });
+    await client.put('/post', {
+      body: { title: 'Foo', body: 'Bar', publish_date: new Date('2023-04-01T12:00:00Z').getTime() },
+    });
   });
 
   it('skips optional requestBody', async () => {
@@ -167,7 +169,7 @@ describe('createClient', () => {
   it('allows override headers', async () => {
     const client = createClient<paths>({ headers: { 'Cache-Control': 'max-age=10000000' } });
     fetchMocker.mockResponseOnce(JSON.stringify({ email: 'user@user.com' }));
-    await client.get('/self', { headers: { 'Cache-Control': 'no-cache' } });
+    await client.get('/self', { params: {}, headers: { 'Cache-Control': 'no-cache' } });
 
     // assert default headers were passed
     const options = fetchMocker.mock.calls[0][1];
@@ -232,6 +234,17 @@ describe('get()', () => {
     expect(data).toBe(undefined);
   });
 
+  // note: this was a previous bug in the type inference
+  it('handles array-type responses', async () => {
+    const client = createClient<paths>();
+    fetchMocker.mockResponseOnce(() => ({ status: 200, body: '[]' }));
+    const { data } = await client.get('/posts', { params: {} });
+    if (!data) throw new Error('data empty');
+
+    // assert array type (and only array type) was inferred
+    expect(data.length).toBe(0);
+  });
+
   it('escapes URLs properly', async () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
@@ -284,6 +297,7 @@ describe('post()', () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 201, body: JSON.stringify(mockData) }));
     const { data, error, response } = await client.put('/post', {
+      params: {},
       body: {
         title: 'New Post',
         body: '<p>Best post yet</p>',
@@ -307,6 +321,7 @@ describe('post()', () => {
     const client = createClient<paths>();
     fetchMocker.mockResponseOnce(() => ({ status: 201, body: JSON.stringify(mockData) }));
     const { data, error, response } = await client.put('/comment', {
+      params: {},
       body: {
         message: 'My reply',
         replied_at: new Date('2023-03-31T12:00:00Z').getTime(),

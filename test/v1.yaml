@@ -19,6 +19,17 @@ paths:
           $ref: '#/components/responses/CreatePost'
         500:
           $ref: '#/components/responses/Error'
+  /posts:
+    get:
+      responses:
+        200:
+          $ref: '#/components/responses/AllPostsGet'
+    post:
+      requestBody:
+        $ref: '#/components/requestBodies/PatchPost'
+      responses:
+        201:
+          $ref: '#/components/responses/PatchPost'
   /post/{post_id}:
     parameters:
       - in: path
@@ -48,7 +59,7 @@ paths:
         $ref: '#/components/requestBodies/PatchPost'
       responses:
         200:
-          $ref: '#/copmonents/responses/PatchPost'
+          $ref: '#/components/responses/PatchPost'
         404:
           $ref: '#/components/responses/Error'
         500:
@@ -240,6 +251,13 @@ components:
               publish_date:
                 type: number
   responses:
+    AllPostsGet:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Post'
     CreatePost:
       content:
         application/json:
@@ -283,6 +301,16 @@ components:
             required:
               - code
               - message
+    PatchPost:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+            required:
+              - status
     PostDelete:
       content:
         application/json:
