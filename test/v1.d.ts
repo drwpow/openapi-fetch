@@ -23,6 +23,19 @@ export interface paths {
       };
     };
   };
+  "/posts": {
+    get: {
+      responses: {
+        200: components["responses"]["AllPostsGet"];
+      };
+    };
+    post: {
+      requestBody: components["requestBodies"]["PatchPost"];
+      responses: {
+        201: components["responses"]["PatchPost"];
+      };
+    };
+  };
   "/post/{post_id}": {
     get: {
       parameters: {
@@ -59,7 +72,7 @@ export interface paths {
       };
       requestBody: components["requestBodies"]["PatchPost"];
       responses: {
-        200: copmonents["responses"]["PatchPost"];
+        200: components["responses"]["PatchPost"];
         404: components["responses"]["Error"];
         500: components["responses"]["Error"];
       };
@@ -183,6 +196,11 @@ export interface components {
     };
   };
   responses: {
+    AllPostsGet: {
+      content: {
+        "application/json": (components["schemas"]["Post"])[];
+      };
+    };
     CreatePost: {
       content: {
         "application/json": {
@@ -209,6 +227,13 @@ export interface components {
         "application/json": {
           code: number;
           message: string;
+        };
+      };
+    };
+    PatchPost: {
+      content: {
+        "application/json": {
+          status: string;
         };
       };
     };
