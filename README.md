@@ -8,7 +8,7 @@ Ultra-fast fetching for TypeScript generated automatically from your OpenAPI sch
 | **openapi-typescript-fetch**   |     `4 kB` |
 | **openapi-typescript-codegen** | `345 kB`\* |
 
-\* _Note: codegen depends on the scope of your API: the larger it is, the larger your client weight. This is the actual weight of GitHub’s REST API client._
+\* _Note: the larger your schema, the larger your codegen size. This is the actual weight of GitHub’s REST API._
 
 The syntax is inspired by popular libraries like react-query or Apollo client, but without all the bells and whistles and in a 1 kb package.
 
@@ -16,10 +16,9 @@ The syntax is inspired by popular libraries like react-query or Apollo client, b
 import createClient from 'openapi-fetch';
 import { paths } from './v1'; // (generated from openapi-typescript)
 
-const { get, post } = createClient<paths>();
+const { get, post } = createClient<paths>({ baseUrl: 'https://myapi.dev/v1/' });
 
 // Type-checked request
-
 await post('/create-post', {
   body: {
     title: 'My New Post',
@@ -28,7 +27,6 @@ await post('/create-post', {
 });
 
 // Type-checked response
-
 const { data, error } = await get('/post/my-blog-post');
 
 console.log(data.title); // ❌ 'data' is possibly 'undefined'
@@ -38,12 +36,11 @@ console.log(data?.foo); // ❌ Property 'foo' does not exist on type …
 
 Notice **there are no generics, and no manual typing.** Your endpoint’s exact request & response was inferred automatically off the URL. This makes a **big difference** in the type safety of your endpoints! This eliminates all of the following:
 
-- ✅ No malformed URLs
-- ✅ Always using the correct method
-- ✅ All parameters are fully type-checked and matched the schema
-- ✅ For POST and PATCH, etc., all request bodies are fully type-checked as well
-- ✅ No chance the wrong type was manually imported
-- ✅ No chance typing was bypassed altogether
+- ✅ No typos in URLs or params
+- ✅ All parameters, request bodies, and responses are type-checked and 100% match your schema
+- ✅ No manual typing of your API
+- ✅ Eliminates `any` types that hide bugs
+- ✅ Also eliminates `as` type overrides that can also hide bugs
 - ✅ All of this in a **1 kB** client package 🎉
 
 ## 🔧 Setup
@@ -72,7 +69,7 @@ import { paths } from './v1'; // (generated from openapi-typescript)
 const { get, post, put, patch, del } = createClient<paths>({
   baseUrl: 'https://myserver.com/api/v1/',
   headers: {
-    Authorization: `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
+    Authorization: `Bearer ${myAuthToken}`,
   },
 });
 ```
@@ -81,51 +78,15 @@ const { get, post, put, patch, del } = createClient<paths>({
 
 Using **openapi-fetch** is as easy as reading your schema! For example, given the following schema:
 
-```yaml
-# v1.yaml
-paths:
-  /post/{post_id}:
-    get:
-      parameters:
-        - in: path
-          name: post_id
-          required: true
-        - in: query
-          name: version
-      responses:
-        200: #…
-        404: #…
-  /create-post:
-    post:
-      requestBody:
-        required: true
-        schema:
-          content:
-            application/json:
-              type: object
-              properties:
-                title:
-                  type: string
-                body:
-                  type: string
-                publish_date:
-                  type: number
-              required:
-                - title
-                - body
-                - publish_date
-      responses:
-        200: #…
-        500: #…
-```
+![OpenAPI schema example](.github/images/example.png)
 
-Here’s how you’d query either endpoint:
+Here’s how you’d fetch both endpoints:
 
 ```ts
 import createClient from 'openapi-fetch';
 import { paths } from './v1';
 
-const { get, post } = createClient<paths>();
+const { get, post } = createClient<paths>({ baseUrl: 'https://myapi.dev/v1/' });
 
 // GET /post/{post_id}
 const { data, error } = await get('/post/{post_id}', {
@@ -145,7 +106,13 @@ const { data, error } = await post('/create-post', {
 });
 ```
 
-Note in the `get()` example, the URL was actually `/post/{post_id}`, _not_ `/post/my-post`. The URL matched the OpenAPI schema definition rather than the final URL. This library will replace the path param correctly for you, automatically.
+- The URL **must match the actual schema** (`/post/{post_id}`). This library replaces all **path** params for you (so they can be typechecked).
+- The `params` object will contain your `path` and `query` parameters, enforcing the correct types.
+- The request `body` will only be required if the endpoint needs it.
+- The endpoint will then respond with **data**, **error**, and **response**.
+  - **data** will contain your typechecked successful response if the request succeeded (`2xx`); otherwise it will be `undefined`
+  - **error** likewise contains your typechecked error response if the request failed (`4xx` / `5xx`); otherwise it will be `undefined`
+  - **response** has other information about the request such as `status`, `headers`, etc. It is not typechecked.
 
 ### 🔀 Parameter Serialization
 
@@ -155,14 +122,14 @@ In the spirit of being lightweight, this library only uses [URLSearchParams](htt
 import createClient from 'openapi-fetch';
 import { paths } from './v1';
 
-const { get, post } = createClient<paths>();
+const { get, post } = createClient<paths>({ baseUrl: 'https://myapi.dev/v1/' });
 
 const { data, error } = await get('/post/{post_id}', {
   params: {
     path: { post_id: 'my-post' },
     query: { version: 2 },
   },
-  querySerializer: (q) => `v=${q.version}`,
+  querySerializer: (q) => `v=${q.version}`, // ✅ Still typechecked based on the URL!
 });
 ```
 
@@ -186,6 +153,7 @@ someAuthMethod().then((newToken) => authToken.set(newToken));
 export const client = computed(authToken, (currentToken) =>
   createClient<paths>({
     headers: currentToken ? { Authorization: `Bearer ${currentToken}` } : {},
+    baseUrl: 'https://myapi.dev/v1/',
   })
 );
 
@@ -211,10 +179,10 @@ import { paths } from './v1';
 let authToken: string | undefined = undefined;
 someAuthMethod().then((newToken) => (authToken = newToken));
 
-const baseClient = createClient<paths>();
+const baseClient = createClient<paths>({ baseUrl: 'https://myapi.dev/v1/' });
 export default new Proxy(baseClient, {
   get(_, key: keyof typeof baseClient) {
-    const newClient = createClient<paths>({ headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} });
+    const newClient = createClient<paths>({ headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}, baseUrl: 'https://myapi.dev/v1/' });
     return newClient[key];
   },
 });
@@ -229,13 +197,16 @@ client.get('/some-authenticated-url', {
 
 ## 🎛️ Config
 
-`createClient()` accepts the following options, which set the default settings for all subsequent fetch calls.
+**createClient** accepts the following options, which set the default settings for all subsequent fetch calls.
 
-| Name      |   Type   | Description                             |
-| :-------- | :------: | :-------------------------------------- |
-| `baseUrl` | `string` | Prefix all fetch URLs with this option. |
+```ts
+createClient<paths>(options);
+```
 
-In addition, you may pass any other [fetch options](https://developer.mozilla.org/en-US/docs/Web/API/fetch) such as `headers`, `mode`, `credentials`, `redirect`, etc. ([docs](https://developer.mozilla.org/en-US/docs/Web/API/fetch)).
+| Name            |   Type   | Description                                                                                                                              |
+| :-------------- | :------: | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `baseUrl`       | `string` | Prefix all fetch URLs with this option (e.g. `"https://myapi.dev/v1/"`).                                                                 |
+| (Fetch options) |          | Any valid fetch option (`headers`, `mode`, `cache`, `signal` …) ([docs](https://developer.mozilla.org/en-US/docs/Web/API/fetch#options)) |
 
 ## 🎯 Project Goals
 
