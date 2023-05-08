@@ -99,7 +99,7 @@ export default function createClient<Paths extends {}>(options?: ClientOptions) 
     },
     /** Call a POST endpoint */
     async post<P extends PathsWith<Paths, 'post'>>(url: P, init: FetchOptions<FilterKeys<Paths[P], 'post'>>) {
-      return coreFetch<P, 'put'>(url, { ...init, method: 'POST' } as any);
+      return coreFetch<P, 'post'>(url, { ...init, method: 'POST' } as any);
     },
     /** Call a DELETE endpoint */
     async del<P extends PathsWith<Paths, 'delete'>>(url: P, init: FetchOptions<FilterKeys<Paths[P], 'delete'>>) {
@@ -107,7 +107,7 @@ export default function createClient<Paths extends {}>(options?: ClientOptions) 
     },
     /** Call a OPTIONS endpoint */
     async options<P extends PathsWith<Paths, 'options'>>(url: P, init: FetchOptions<FilterKeys<Paths[P], 'options'>>) {
-      return coreFetch<P, 'delete'>(url, { ...init, method: 'OPTIONS' } as any);
+      return coreFetch<P, 'options'>(url, { ...init, method: 'OPTIONS' } as any);
     },
     /** Call a HEAD endpoint */
     async head<P extends PathsWith<Paths, 'head'>>(url: P, init: FetchOptions<FilterKeys<Paths[P], 'head'>>) {
