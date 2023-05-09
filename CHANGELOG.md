@@ -1,5 +1,11 @@
 # openapi-fetch
 
+## 0.1.3
+
+### Patch Changes
+
+- 8c01480: Fix querySerializer signature
+
 ## 0.1.2
 
 ### Patch Changes
