@@ -40,8 +40,8 @@ export type RequestBodyObj<O> = O extends { requestBody: any } ? O['requestBody'
 export type RequestBodyContent<O> = undefined extends RequestBodyObj<O> ? FilterKeys<NonNullable<RequestBodyObj<O>>, 'content'> | undefined : FilterKeys<RequestBodyObj<O>, 'content'>;
 export type RequestBodyJSON<O> = FilterKeys<RequestBodyContent<O>, JSONLike> extends never ? FilterKeys<NonNullable<RequestBodyContent<O>>, JSONLike> | undefined : FilterKeys<RequestBodyContent<O>, JSONLike>;
 export type RequestBody<O> = undefined extends RequestBodyJSON<O> ? { body?: RequestBodyJSON<O> } : { body: RequestBodyJSON<O> };
-export type QuerySerializer<O> = { querySerializer?: (query: O extends { parameters: { query: any } } ? O['parameters']['query'] : Record<string, unknown>) => string };
-export type FetchOptions<T> = Params<T> & RequestBody<T> & Omit<RequestInit, 'body'> & QuerySerializer<T>;
+export type QuerySerializer<O> = (query: O extends { parameters: { query: any } } ? O['parameters']['query'] : Record<string, unknown>) => string;
+export type FetchOptions<T> = Params<T> & RequestBody<T> & Omit<RequestInit, 'body'> & { querySerializer?: QuerySerializer<T> };
 export type Success<O> = FilterKeys<FilterKeys<O, OkStatus>, 'content'>;
 export type Error<O> = FilterKeys<FilterKeys<O, ErrorStatus>, 'content'>;
 export type FetchResponse<T> =
@@ -55,7 +55,7 @@ export default function createClient<Paths extends {}>(options?: ClientOptions) 
   });
 
   async function coreFetch<P extends keyof Paths, M extends HttpMethod>(url: P, fetchOptions: FetchOptions<M extends keyof Paths[P] ? Paths[P][M] : never>): Promise<FetchResponse<M extends keyof Paths[P] ? Paths[P][M] : unknown>> {
-    let { headers, body: requestBody, params = {}, querySerializer = (q: QuerySerializer<M extends keyof Paths[P] ? Paths[P][M] : never>) => new URLSearchParams(q as any).toString(), ...init } = fetchOptions || {};
+    const { headers, body: requestBody, params = {}, querySerializer = (q: QuerySerializer<M extends keyof Paths[P] ? Paths[P][M] : never>) => new URLSearchParams(q as any).toString(), ...init } = fetchOptions || {};
 
     // URL
     let finalURL = `${options?.baseUrl ?? ''}${url as string}`;
