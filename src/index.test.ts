@@ -353,6 +353,7 @@ describe('post()', () => {
   });
 
   it('request body type when optional', async() => {
+    fetchMocker.mockResponse(() => ({ status: 201, body: '{}' }));
     const client = createClient<paths>();
 
     // expect error on wrong body type
@@ -370,6 +371,7 @@ describe('post()', () => {
   })
 
   it('request body type when optional inline', async() => {
+    fetchMocker.mockResponse(() => ({ status: 201, body: '{}' }));
     const client = createClient<paths>();
 
     // expect error on wrong body type
