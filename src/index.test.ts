@@ -285,17 +285,21 @@ describe('get()', () => {
 });
 
 describe('post()', () => {
+  function mockResponse<T>(code: number, body?: T) {
+    const mock = fetchMocker.mockResponseOnce(() => ({ status: code, body: body !== undefined ? JSON.stringify(body) : '' }));
+    return {body, mock};
+  }
+
   it('sends the correct method', async () => {
     const client = createClient<paths>();
-    fetchMocker.mockResponseOnce(() => ({ status: 200, body: '{}' }));
+    mockResponse(200, {});
     await client.post('/anyMethod', {});
     expect(fetchMocker.mock.calls[0][1]?.method).toBe('POST');
   });
 
   it('sends correct options, returns success', async () => {
-    const mockData = { status: 'success' };
     const client = createClient<paths>();
-    fetchMocker.mockResponseOnce(() => ({ status: 201, body: JSON.stringify(mockData) }));
+    const { body: mockData } = mockResponse(201, {status: 'success'});
     const { data, error, response } = await client.put('/post', {
       params: {},
       body: {
@@ -316,10 +320,9 @@ describe('post()', () => {
     expect(error).toBe(undefined);
   });
 
-  it('supports sepecifying utf-8 encoding', async () => {
-    const mockData = { message: 'My reply' };
+  it('supports specifying utf-8 encoding', async () => {
     const client = createClient<paths>();
-    fetchMocker.mockResponseOnce(() => ({ status: 201, body: JSON.stringify(mockData) }));
+    const { body: mockData } = mockResponse(201, {status: 'My reply'});
     const { data, error, response } = await client.put('/comment', {
       params: {},
       body: {
@@ -338,7 +341,7 @@ describe('post()', () => {
 
   it('returns empty object on 204', async () => {
     const client = createClient<paths>();
-    fetchMocker.mockResponseOnce(() => ({ status: 204, body: '' }));
+    const { body: mockData } = mockResponse(204);
     const { data, error, response } = await client.put('/tag/{name}', {
       params: { path: { name: 'New Tag' } },
       body: { description: 'This is a new tag' },
@@ -351,6 +354,44 @@ describe('post()', () => {
     // assert error is empty
     expect(error).toBe(undefined);
   });
+
+  it('request body type when optional', async() => {
+    const client = createClient<paths>();
+    const { body: mockData } = mockResponse(201, {status: 'success'});
+    const { data, error, response } = await client.post('/post/optional', {
+      body: {
+        title: '',
+        publish_date: 3,
+        body: ''
+      }
+    })
+
+    // assert correct data was returned
+    expect(data).toEqual(mockData);
+    expect(response.status).toBe(201);
+
+    // assert error is empty
+    expect(error).toBe(undefined);
+  })
+
+  it('request body type when optional inline', async() => {
+    const client = createClient<paths>();
+    const { body: mockData } = mockResponse(201, {status: 'success'});
+    const { data, error, response } = await client.post('/post/optional/inline', {
+      body: {
+        title: '',
+        publish_date: 3,
+        body: ''
+      }
+    })
+
+    // assert correct data was returned
+    expect(data).toEqual(mockData);
+    expect(response.status).toBe(201);
+
+    // assert error is empty
+    expect(error).toBe(undefined);
+  })
 });
 
 describe('delete()', () => {
