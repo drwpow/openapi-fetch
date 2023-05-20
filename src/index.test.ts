@@ -192,7 +192,7 @@ describe('client', () => {
           ok: true,
         } as Response),
     });
-    expect((await client.get('/', {})).data).toBe(data);
+    expect((await client.get('/self', {})).data).toBe(data);
   });
 });
 
