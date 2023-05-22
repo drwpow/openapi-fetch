@@ -44,12 +44,12 @@
     "@changesets/changelog-git": "^0.1.14",
     "@changesets/cli": "^2.26.1",
     "del-cli": "^5.0.0",
-    "esbuild": "^0.17.18",
+    "esbuild": "^0.17.19",
     "nanostores": "^0.8.1",
     "openapi-typescript": "^6.2.4",
     "prettier": "^2.8.8",
     "typescript": "^5.0.4",
-    "vitest": "^0.31.0",
+    "vitest": "^0.31.1",
     "vitest-fetch-mock": "^0.2.2"
   }
 }
