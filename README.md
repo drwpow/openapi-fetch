@@ -206,6 +206,7 @@ createClient<paths>(options);
 | Name            |   Type   | Description                                                                                                                              |
 | :-------------- | :------: | :--------------------------------------------------------------------------------------------------------------------------------------- |
 | `baseUrl`       | `string` | Prefix all fetch URLs with this option (e.g. `"https://myapi.dev/v1/"`).                                                                 |
+| `fetch`         | `fetch`  | Fetch function used for requests (defaults to `globalThis.fetch`)                                                                        |
 | (Fetch options) |          | Any valid fetch option (`headers`, `mode`, `cache`, `signal` …) ([docs](https://developer.mozilla.org/en-US/docs/Web/API/fetch#options)) |
 
 ## 🎯 Project Goals
